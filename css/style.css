@@ -225,11 +225,18 @@ button {  width: auto; overflow: visible; }
  */
 
 #save-result { display: none; }
-#save {
+#toolbar {
+  display: block;
+  clear: both;
+  width: 100%;
+  height: 40px;
+}
+#toolbar div {
   border: 1px #666 solid;
   padding: 10px;
   background-color: #efefef;
   float: left;
+  cursor: pointer;
 }
 #screen {
   width: 800px;
@@ -237,6 +244,27 @@ button {  width: auto; overflow: visible; }
   background-color: #000;
   display: block;
   clear: both;
+}
+
+/* For tileset editor */
+#level-editor #tiles {
+  width: 200px;
+  height: 600px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  float: left;
+}
+#level-editor #tile-metadata {
+  width: 400px;
+  float: left;
+  border: 1px #333 solid;
+  display: none;      /* Initially hidden */
+}
+#level-editor .tile {
+  width: 101px;
+  height: 171px;
+  display: block;
+  border: 1px #efefef solid;
 }
 
 /*

@@ -1,65 +1,44 @@
-/* Author: 
-
-*/
+/**
+ * tileset-editor.js
+ * 
+ * Javascript for the tileset editor/viewer.
+ */
 
 $(function () {
-  var tiles = [],
-      width = $("#screen").width(),
-      height = $("#screen").height(),
-      mouse_down = false,
-      context = document.getElementById('screen').getContext('2d');
+  // Load the tileset from /js/tileset.js
+  var tileset = [];
+  var current_tile = null;
   
-  var redraw_tiles = function () {
-    with(context) {
-      fillStyle = 'rgb(0,0,0)';
-      fillRect(0,0,width,height);
-      
-      fillStyle = 'rgb(255,255,255)';
-      for(var x = 0; x < width / 10; ++x) {
-        for(var y = 0; y < height / 10; ++y) {
-          if(tiles[x][y]) {
-            fillRect(x * 10, y * 10, 10, 10);
-          }
-        }
-      }
-    };
+  var edit_tile = function (tile_id) {
+    current_tile = tile_id;
+    $("#tile-name").val(tileset[tile_id].name);
+    $("#tile-metadata").show('slow');
   };
   
-  for(var x = 0; x < width / 10; x++) {
-    tiles[x] = [];
-    for(var y = 0; y < height / 10; y++) {
-      tiles[x][y] = 0;
-    }
-  }
-  $("#screen")
-  .bind('mousedown', function (e) {
-    var x = Math.floor((e.layerX - e.target.offsetLeft) / 10),
-        y = Math.floor((e.layerY - e.target.offsetTop) / 10);
-    
-    tiles[x][y] = !e.metaKey;
-    
-    redraw_tiles();
-    mouse_down = true;
-    metakey_down = e.metaKey;
-    return false;
-  })
-  .bind('mouseleave mouseup', function (e) {
-    mouse_down = false;
-    metakey_down = false;
-  })
-  .bind('mousemove', function (e) {
-    if(mouse_down) {
-      var x = Math.floor((e.layerX - e.target.offsetLeft) / 10),
-          y = Math.floor((e.layerY - e.target.offsetTop) / 10);
-      
-      tiles[x][y] = !metakey_down;
-      redraw_tiles();
-      return false;
-    }
-  });
-  $("#save").click(function (e) {
-    $("#save-result")
-    .text(JSON.stringify(tiles))
-    .fadeIn('slow');
+  $.getJSON('js/tileset.json', function (data, txtStatus, xhr) {
+    // Once the file is loaded, create tiles in #tiles for each tile in the
+    // tileset file.
+    tileset = data;
+    $("#tiles").empty();
+    $.each(tileset, function (i, t) {
+      $(document.createElement('div'))
+      .attr('id', 'tile-' + i)
+      .addClass('tile')
+      .data('tile', t)
+      .click(function (e) {
+        console.log($(this).data('tile'));
+        edit_tile($(this).data('tile').id);
+      })
+      .append(
+        $(document.createElement('h4'))
+        .text(t.name)
+      )
+      .css({
+        'background-image': 'url(' + t.image + ')',
+        'background-repeat': 'no-repeat',
+        'background-position': '0px 0px'
+      })
+      .appendTo($("#tiles"));
+    });
   });
 });

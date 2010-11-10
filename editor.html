@@ -36,7 +36,7 @@
 
 </head>
 
-<body>
+<body id="level-editor">
 
   <div id="container">
     <header>
@@ -45,15 +45,34 @@
     </header>
     
     <div id="main">
-      <div id="save-result"></div>
-      <div id="save">save</div>
-      <canvas id="screen" width="800" height="600">Your browser does not support canvases.</canvas>
+      <div id="toolbar">
+        <div id="save">save</div>
+      </div>
+      
+      <div id="tiles">
+        Loading tiles...
+      </div>
     </div>
     
     <footer>
       (c) 2010 max thom stahl, villainous industries
     </footer>
   </div> <!--! end of #container -->
+
+  <!-- These are invisible at page load, 'cause they're turned into dialog boxes -->
+  <div id="edit-metadata">
+    <h3>Level metadata</h3>
+    <p>
+      <label for="level-title">Level title:</label>
+      <input id="level-title" name="level-title" type="text" />
+    </p>
+    <p>
+      <label for="level-author">Author:</label>
+      <input id="level-author" name="level-author" type="text" />
+    </p>        
+    <button id="save-metadata">Save</button>
+  </div>
+
 
 
   <!-- Javascript at the bottom for fast page loading -->
@@ -64,8 +83,7 @@
   
   
   <!-- scripts concatenated and minified via ant build script-->
-  <script src="js/plugins.js"></script>
-  <script src="js/script.js"></script>
+  <script src="js/tileset-editor.js"></script>
   <!-- end concatenated and minified scripts-->
   
   
