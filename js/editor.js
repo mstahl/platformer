@@ -53,6 +53,11 @@ $(function () {
       })
       .appendTo($("#tiles"));
     });
+    
+    $.getJSON('js/level.json', function (data) {
+      level = data;
+      redraw();
+    });
   });
   
   // Initialize level here
@@ -69,7 +74,6 @@ $(function () {
   // Method for redrawing the screen
   var context = document.getElementById('screen').getContext('2d');
   var redraw = function () {
-    console.log("redrawing");
     with(context) {
       fillStyle = "rgb(0,0,0)";
       fillRect(0, 0, 800, 600);
@@ -98,12 +102,8 @@ $(function () {
     // into the tiles[] array.
     var x = Math.floor((e.pageX - e.target.offsetLeft) / 100),
         y = Math.floor((e.pageY - e.target.offsetTop) / 40);
-    console.log(x, y);
     if(current_tile !== null) {
-      console.log("tile brush id: " + current_tile.id);
-      
       level[x][y] = current_tile.id;
-      console.log("just checking... that id should be " + level[x][y]);
     }
     else {
       level[x][y] = 0;
@@ -117,8 +117,9 @@ $(function () {
   // and for the save button...
   $("#save")
   .click(function (e) {
-    $("#save-result")
-    .text(JSON.stringify(level))
-    .show();
+    var uri = 'data:application/json,' + encodeURI(JSON.stringify(level));
+
+    // window.location.href = uri;
+    window.open(uri, 'level.json');
   });
 });
