@@ -247,6 +247,10 @@ button {  width: auto; overflow: visible; }
 }
 
 /* For tileset editor */
+#level-editor #main {
+  float: left;
+  width: 100%;
+}
 #level-editor #tiles {
   width: 200px;
   height: 600px;
@@ -260,11 +264,31 @@ button {  width: auto; overflow: visible; }
   border: 1px #333 solid;
   display: none;      /* Initially hidden */
 }
+#level-editor .tile-name {
+  font-weight: bold;
+  text-align: center;
+  padding: 5px;
+}
 #level-editor .tile {
   width: 101px;
   height: 171px;
   display: block;
-  border: 1px #efefef solid;
+  border: 1px #666 solid;
+  margin: 10px auto;
+}
+
+#level-editor #screen {
+  width: 800px;
+  height: 600px;
+  border: 1px #666 solid;
+  background-color: #000;
+  float: left;
+  display: block;
+  clear: none;
+}
+
+footer {
+  clear: both;
 }
 
 /*
