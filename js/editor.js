@@ -1,11 +1,10 @@
 /**
- * tileset-editor.js
+ * editor.js
  * 
- * Javascript for the tileset editor/viewer.
+ * Javascript for the level editor/viewer.
  */
 
 $(function () {
-  // Load the tileset from /js/tileset.js
   var tileset = [],
       current_tile = null,
       level = [];
@@ -69,7 +68,6 @@ $(function () {
       }
     }
   };
-  clear_level();
   
   // Method for redrawing the screen
   var context = document.getElementById('screen').getContext('2d');
@@ -121,5 +119,10 @@ $(function () {
 
     // window.location.href = uri;
     window.open(uri, 'level.json');
+  });
+  
+  $("#clear").click(function (e) {
+    clear_level();
+    redraw();
   });
 });

@@ -12,7 +12,7 @@
        Remove this if you use the .htaccess -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-  <title></title>
+  <title>platformer</title>
   <meta name="description" content="">
   <meta name="author" content="">
 
@@ -40,11 +40,17 @@
   <div id="container">
     <header>
       <h1>platformer</h1>
-      <p>An arcade classic, for your browser</p>
+      <p>An arcade classic, for your browser.</p>
     </header>
     
     <div id="main">
       <canvas id="screen" width="800" height="600">Your browser does not support canvases.</canvas>
+    </div>
+    
+    <div id="help" style="display:none;">
+      <h1>help</h1>
+      <p>Platformer is a really simple arcade game. WASD or arrow keys to move, space to jump.</p>
+      <p>[<a href="javascript:void(0);" onclick="$('#help').hide(); $('#main').fadeIn('slow'); return false;">close</a>]</p>
     </div>
     
     <footer>

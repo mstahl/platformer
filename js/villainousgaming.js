@@ -116,12 +116,12 @@ Sprite.prototype.reposition = function (x, y) {
   return this;
 };
 Sprite.prototype.move = function () {
-  if(this.before_move()) {
-    this.position.x += this.velocity.x;
-    this.position.y += this.velocity.y;
-    this.angle += this.angular_velocity;
-    this.after_move();
-  }
+  this.before_move();
+  this.position.x += this.velocity.x;
+  this.position.y += this.velocity.y;
+  this.angle += this.angular_velocity;
+  this.after_move();
+  
   return this;
 };
 Sprite.prototype.redraw = function (ctx) {
