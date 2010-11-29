@@ -11,8 +11,11 @@ $(function () {
     tile_height: 40,
 
     // Physics variables
-    gravity: 0.50,     // Acceleration due to gravity (per tick)
-    terminal_velocity: 15
+    gravity: 0.98,     // Acceleration due to gravity (per tick)
+    max_velocity_x: 10,
+    max_velocity_y: 15,
+    player_acceleration: 0.65,
+    friction: 0.80
   };
   
   // Classes
@@ -33,6 +36,10 @@ $(function () {
       y1: 32,
       y2: 111
     };
+    this.acceleration = {
+      left: false,
+      right: false
+    };
   };
   Player.prototype = new Sprite();
   Player.prototype.redraw = function (ctx) {
@@ -46,9 +53,14 @@ $(function () {
   
   // Game variables.
   var game = new Game();
-  var context = document.getElementById('screen').getContext('2d');
+  var contexts = [
+    document.getElementById('screen-0').getContext('2d'), 
+    document.getElementById('screen-1').getContext('2d')
+  ];
+  var context_i = 0;
   var tileset = [];
   var level = [];
+  var scroll = 0;
   
   var draw_level = function (l, c) {
     for(var x = 0; x < level.length; ++x) {
@@ -73,11 +85,11 @@ $(function () {
       });
       
       // Draw the level, but not the player yet
-      with(context) {
+      with(contexts[0]) {
         fillStyle = 'rgb(0,0,0)';
         fillRect(0, 0, 800, 600);
       };
-      draw_level(level, context);
+      draw_level(level, contexts[0]);
     },
     onloop: function () {
       return true;
@@ -100,7 +112,9 @@ $(function () {
             break;
           case 65:      // 'a'
           case 37:      // 'left'
-            game.player.velocity.x = -3;
+            // game.player.velocity.x = -3;
+            game.player.acceleration.left = true;
+            game.player.acceleration.right = false;
             return false;
           case 83:      // 's'
           case 40:      // 'down'
@@ -108,11 +122,13 @@ $(function () {
             break;
           case 68:      // 'd'
           case 39:      // 'right'
-            game.player.velocity.x = 3;
+            // game.player.velocity.x = 3;
+            game.player.acceleration.left = false;
+            game.player.acceleration.right = true;
             return false;
           case 32:      // 'space'
             if(game.player.velocity.y < 1.0) {
-              game.player.velocity.y = -10;
+              game.player.velocity.y = -20;
             }
             return false;
           default:
@@ -123,25 +139,51 @@ $(function () {
         switch(e.keyCode) {
           case 65:      // 'a'
           case 37:      // 'left'
+            game.player.acceleration.left = false;
+            break;
           case 68:      // 'd'
           case 39:      // 'right'
-            game.player.velocity.x = 0;
+            game.player.acceleration.right = false;
             return false;
         }
       });
     },
     onloop: function () {
+      // Perform the canvas swap
+      $("#screen-" + (1 - context_i)).show();
+      $("#screen-" + context_i).hide();
+      context_i = 1 - context_i;
+      var context = contexts[context_i];
+    
       // Clear the screen
       with(context) {
         fillStyle = 'rgb(0,0,0)';
         fillRect(0, 0, 800, 600);
       };
       
+      // Adjust the scrolling of the screen, according to the player's position
+      scroll = game.player.position.x - 400;
+      if(scroll < 0) scroll = 0;
+      context.save();
+      context.translate(-scroll, 0);
+      
       // Draw the level's tiles
       draw_level(level, context);
       
       // Apply gravity
       game.player.velocity.y = game.player.velocity.y + defaults.gravity;
+      // Apply forces from the controls
+      if(game.player.acceleration.left) {
+        game.player.velocity.x = game.player.velocity.x - defaults.player_acceleration;
+      }
+      else if(game.player.acceleration.right) {
+        game.player.velocity.x = game.player.velocity.x + defaults.player_acceleration;
+      }
+      // Handle the excesses of Sweet Lady Physics
+      if(Math.abs(game.player.velocity.x) > defaults.max_velocity_x)
+        game.player.velocity.x = (game.player.velocity.x / Math.abs(game.player.velocity.x)) * defaults.max_velocity_x;
+      if(Math.abs(game.player.velocity.y) > defaults.max_velocity_y)
+        game.player.velocity.y = (game.player.velocity.y / Math.abs(game.player.velocity.y)) * defaults.max_velocity_y;
       
       // Handle player's collision with the world around it and also move it.
       var x1 = game.player.position.x + game.player.offset.x1 + game.player.velocity.x,
@@ -183,7 +225,7 @@ $(function () {
         else if(v.x < 0) {
           if(level[i1][j1] !== 0 || level[i1][j2] !== 0) {
             game.player.velocity.x = 0;
-            game.player.position.x = i1 * w - game.player.offset.x1;
+            game.player.position.x = i1 * w + game.player.offset.x2 - 2;
           }
         }
         // And in the vertical direction
@@ -191,6 +233,13 @@ $(function () {
           if(level[i1][j1 + 1] !== 0 || level[i2][j1 + 1] !== 0) {
             game.player.velocity.y = 0;
             game.player.position.y = j1 * h;
+            
+            // If the player is not holding down one of the acceleration keys,
+            // rob a little velocity due to friction here. Later on, this can
+            // be replaced with the coefficient of kinetic friction of the material
+            // that the tile we just tested is made of.
+            if(!game.player.acceleration.left && !game.player.acceleration.right)
+              game.player.velocity.x = game.player.velocity.x * defaults.friction;
           }
         }
         else if(v.y < 0) {
@@ -203,6 +252,8 @@ $(function () {
       }
       
       game.player.redraw(context);
+      
+      context.restore();    // Restored from scrolling translation at top of function
     },
     onleave: function (to) {
       game.player = null;
