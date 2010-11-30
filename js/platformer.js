@@ -93,6 +93,7 @@ $(function () {
         var c = document.getElementById('level-canvas').getContext('2d');
         draw_level(level, c);
         level_image.src = document.getElementById('level-canvas').toDataURL();
+        $("#level-canvas").remove();
       }
       
       $(window).bind('keydown', function (e) {
