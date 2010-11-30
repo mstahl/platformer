@@ -5,52 +5,6 @@
  */
 
 $(function () {
-  var defaults = {
-    // Tile variables
-    tile_width: 100,
-    tile_height: 40,
-
-    // Physics variables
-    gravity: 0.98,     // Acceleration due to gravity (per tick)
-    max_velocity_x: 10,
-    max_velocity_y: 15,
-    player_acceleration: 0.65,
-    friction: 0.80
-  };
-  
-  // Classes
-  var Player = function () {
-    this.num_lives = 5;
-    this.position.x = 20;
-    this.position.y = 20;
-    this.velocity = {
-      x: 0,
-      y: 0
-    };
-    this.image = new Image();
-    this.image.src = 'images/sprites/Character Princess Girl.png';
-    this.offset = {
-      x1: 13,
-      x2: 89,
-      
-      y1: 32,
-      y2: 111
-    };
-    this.acceleration = {
-      left: false,
-      right: false
-    };
-  };
-  Player.prototype = new Sprite();
-  Player.prototype.redraw = function (ctx) {
-    with(ctx) {
-      save();
-      translate(0, -130);
-      drawImage(this.image, this.position.x, this.position.y);
-      restore();
-    };
-  };
-  
   // Game variables.
   var game = new Game();
   var contexts = [
@@ -102,6 +56,26 @@ $(function () {
     onenter: function (from) {
       if(from === 'intro') {
         game.player = new Player();
+        game.player.level = level;
+        game.player.tileset = tileset;
+        
+        // Initialize enemies
+        game.enemies = [];
+        for(var i = 0; i < level.length; ++i) {
+          for(var j = 0; j < level[i].length; ++j) {
+            if(level[i][j] !== 0 && tileset[level[i][j] - 1].type === 'enemy') {
+              level[i][j] = 0;    // Delete the enemy from the level.
+              game.enemies.push(new Bug({
+                position: {
+                  x: i * defaults.tile_width,
+                  y: j * defaults.tile_height
+                },
+                level: level,
+                tileset: tileset
+              }));
+            }
+          }
+        }
       }
       
       $(window).bind('keydown', function (e) {
@@ -127,8 +101,9 @@ $(function () {
             game.player.acceleration.right = true;
             return false;
           case 32:      // 'space'
-            if(game.player.velocity.y < 1.0) {
+            if(game.player.collision_with.bottom) {
               game.player.velocity.y = -20;
+              game.player.collision_with.bottom = false;
             }
             return false;
           default:
@@ -164,94 +139,21 @@ $(function () {
       // Adjust the scrolling of the screen, according to the player's position
       scroll = game.player.position.x - 400;
       if(scroll < 0) scroll = 0;
+      
       context.save();
       context.translate(-scroll, 0);
       
       // Draw the level's tiles
       draw_level(level, context);
       
-      // Apply gravity
-      game.player.velocity.y = game.player.velocity.y + defaults.gravity;
-      // Apply forces from the controls
-      if(game.player.acceleration.left) {
-        game.player.velocity.x = game.player.velocity.x - defaults.player_acceleration;
-      }
-      else if(game.player.acceleration.right) {
-        game.player.velocity.x = game.player.velocity.x + defaults.player_acceleration;
-      }
-      // Handle the excesses of Sweet Lady Physics
-      if(Math.abs(game.player.velocity.x) > defaults.max_velocity_x)
-        game.player.velocity.x = (game.player.velocity.x / Math.abs(game.player.velocity.x)) * defaults.max_velocity_x;
-      if(Math.abs(game.player.velocity.y) > defaults.max_velocity_y)
-        game.player.velocity.y = (game.player.velocity.y / Math.abs(game.player.velocity.y)) * defaults.max_velocity_y;
-      
-      // Handle player's collision with the world around it and also move it.
-      var x1 = game.player.position.x + game.player.offset.x1 + game.player.velocity.x,
-          x2 = game.player.position.x + game.player.offset.x2 + game.player.velocity.x,
-          y1 = game.player.position.y + game.player.velocity.y,
-          y2 = y1 - 80 + game.player.velocity.y,
-          w = defaults.tile_width,
-          h = defaults.tile_height,
-          v = game.player.velocity;
-      // First test for collisions with the outer edges of the world
-      if(x1 < 0) {
-        game.player.velocity.x = 0;
-        game.player.position.x = -game.player.offset.x1;
-      }
-      else if(x2 > level.length * w) {
-        game.player.velocity.x = 0;
-        game.player.position.x = level.length * w - game.player.offset.x2;
-      }
-      if(y2 < 0) {
-        game.player.velocity.y = 0;
-        game.player.position.y = 80;
-      }
-      else if(y1 > 600) {
-        game.player.velocity.y = 0;
-        game.player.position.y = 600;
-      }
-      else {
-        // Handle collisions with tiles here
-        var i1 = Math.floor(x1 / w),
-            i2 = Math.floor(x2 / w),
-            j1 = Math.floor(y1 / h),
-            j2 = Math.floor(y2 / h);
-        if(v.x > 0) {
-          if(level[i2][j1] !== 0 || level[i2][j2] !== 0) {
-            game.player.velocity.x = 0;
-            game.player.position.x = i2 * w - game.player.offset.x2;
-          }
-        }
-        else if(v.x < 0) {
-          if(level[i1][j1] !== 0 || level[i1][j2] !== 0) {
-            game.player.velocity.x = 0;
-            game.player.position.x = i1 * w + game.player.offset.x2 - 2;
-          }
-        }
-        // And in the vertical direction
-        if(v.y > 0) {
-          if(level[i1][j1 + 1] !== 0 || level[i2][j1 + 1] !== 0) {
-            game.player.velocity.y = 0;
-            game.player.position.y = j1 * h;
-            
-            // If the player is not holding down one of the acceleration keys,
-            // rob a little velocity due to friction here. Later on, this can
-            // be replaced with the coefficient of kinetic friction of the material
-            // that the tile we just tested is made of.
-            if(!game.player.acceleration.left && !game.player.acceleration.right)
-              game.player.velocity.x = game.player.velocity.x * defaults.friction;
-          }
-        }
-        else if(v.y < 0) {
-          if(level[i1][j2] !== 0 || level[i2][j2] !== 0) {
-            game.player.velocity.y = 0;
-            game.player.position.y = j1 * h;
-          }
-        }
-        game.player.move();
-      }
+      game.player.move();
       
       game.player.redraw(context);
+      
+      for(var i in game.enemies) {
+        game.enemies[i].move();
+        game.enemies[i].redraw(context);
+      }
       
       context.restore();    // Restored from scrolling translation at top of function
     },

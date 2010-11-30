@@ -1,5 +1,5 @@
 #!/usr/bin/ruby -w
-
+# 
 # jsonify_tile.rb
 # 
 # Accepts a list of image files and for each one it mocks up a JSON closure for
@@ -18,6 +18,7 @@ puts '['
 puts ARGV.map {|a|
   json_obj = Hash.new
   json_obj[:name] = File.basename(a, '.png')
+  json_obj[:type] = 'solid'
   imgdata = File.open(a, 'rb') do |f|
     Base64.encode64(f.read).gsub(/\n/, '')
   end
