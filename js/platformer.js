@@ -16,6 +16,8 @@ $(function () {
   var level = [];
   var level_image = new Image();
   var scroll = 0;
+//  var clouds = [];
+  var score = 0;
   
   var draw_level = function (l, c) {
     for(var x = 0; x < level.length; ++x) {
@@ -94,6 +96,18 @@ $(function () {
         draw_level(level, c);
         level_image.src = document.getElementById('level-canvas').toDataURL();
         $("#level-canvas").remove();
+        
+        // Initialize cloud generator
+//        window.cloud_timer = window.setInterval(function () {
+//          var c = new Cloud({
+//            position: {
+//              x: level.length * defaults.tile_width,
+//              y: 200
+//            }
+//          });
+//          log('generated new cloud:', c);
+//          clouds.push(c);
+//        }, 5000);
       }
       
       $(window).bind('keydown', function (e) {
@@ -150,7 +164,7 @@ $(function () {
     
       // Clear the screen
       with(context) {
-        fillStyle = 'rgb(0,0,0)';
+        fillStyle = '#a2e1ff';
         fillRect(0, 0, 800, 600);
       };
       
@@ -161,18 +175,58 @@ $(function () {
       context.save();
       context.translate(-scroll, 0);
       
+      // Move and redraw clouds
+//      clouds = $.grep(clouds, function (c, i) {
+//        c.move();
+//        if(c.position.x < -400) {
+//          return false;
+//        }
+//        else {
+//          c.redraw(context);
+//          return true;
+//        }
+//      });
+      
       // Draw the level's tiles
-      // draw_level(level, context);
-      context.drawImage(level_image, 0, 0);
+      try {
+        context.drawImage(level_image, 0, 0);
+      }
+      catch (e) {
+        console.log('image was not yet ready');
+      }
       
+      // Move and redraw player
       game.player.move();
-      
       game.player.redraw(context);
       
+      // Test player and all enemies for collisions
+      game.enemies = $.grep(game.enemies, function (e, i) {
+        if(e.collides_with(game.player)) {
+          // Here, the player has collided with an enemy. If the player is moving
+          // faster in the y direction than in the x direction (downward), then
+          // the bug dies. Otherwise, the player loses a life.
+          if(game.player.velocity.y > Math.abs(game.player.velocity.x)) {
+            score += 75;
+            game.player.velocity.y = -game.player.velocity.y * 0.95;
+            return false;
+          }
+          else {
+            game.player.num_lives -= 1;
+            return true;
+          }
+        }
+        else return true;
+      });
+      
+      // Move and redraw enemies
       for(var i in game.enemies) {
         game.enemies[i].move();
         game.enemies[i].redraw(context);
       }
+      
+      // Set score, number of lives, etc.
+      $("#score").text(score);
+      $("#lives").text(game.player.num_lives);
       
       context.restore();    // Restored from scrolling translation at top of function
     },

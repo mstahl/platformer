@@ -251,6 +251,19 @@ button {  width: auto; overflow: visible; }
 }
 #screen-1 { display: none; }
 
+#main {
+  position: relative;
+}
+#info {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  color: #333;
+  font-size: 17px;
+}
+
 /* For tileset editor */
 #level-editor #main {
   float: left;

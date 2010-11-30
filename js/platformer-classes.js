@@ -11,10 +11,10 @@ window.defaults = {
   tile_height: 40,
 
   // Physics variables
-  gravity: 0.98,     // Acceleration due to gravity (per tick)
-  max_velocity_x: 10,
-  max_velocity_y: 15,
-  player_acceleration: 0.65,
+  gravity: 1.5,     // Acceleration due to gravity (per tick)
+  max_velocity_x: 12.5,
+  max_velocity_y: 20,
+  player_acceleration: 1,
   friction: 0.80
 };
 
@@ -115,7 +115,7 @@ TileSprite.prototype.move = function () {
     for(var y = this.position.y + 30; y > this.position.y - 119; y -= 10) {
       var i = Math.floor(x / w),
           j = Math.floor(y / h);
-      if(i < this.level.length && this.level[i][j] !== 0 && this.tileset[this.level[i][j] - 1].type === 'solid') {
+      if(j >= 0 && this.level[i][j] !== 0 && this.tileset[this.level[i][j] - 1].type === 'solid') {
         // There is a tile to the right of us somewhere
         this.velocity.x = 0;
         this.position.x = i * w - this.offset.x2;
@@ -130,7 +130,7 @@ TileSprite.prototype.move = function () {
     for(var y = this.position.y + 30; y > this.position.y - 119; y -= 10) {
       var i = Math.floor(x / w),
           j = Math.floor(y / h);
-      if(i >= 0 && this.level[i][j] !== 0 && this.tileset[this.level[i][j] - 1].type === 'solid') {
+      if(j >= 0 && this.level[i][j] !== 0 && this.tileset[this.level[i][j] - 1].type === 'solid') {
         // There is a tile to the left of us somewhere
         this.velocity.x = 0;
         this.position.x = i * w + w - this.offset.x1;
@@ -274,4 +274,32 @@ Bug.prototype.after_move = function () {
 
 
 
-
+var Cloud = function (options) {
+  $.extend(this, {
+    position: {
+      x: 1000,
+      y: 300
+    },
+    velocity: {
+      x: -1 - 4 * Math.random(),
+      y: 0
+    }
+  }, options);
+  this.circles = [];
+  for(var x = 0; x < 150; x += 30) {
+    this.circles.push({x: x, y: 15 - 30 * Math.random(), r: 30 + 15 * Math.random()});
+  }
+};
+Cloud.prototype = new Sprite();   // Clouds don't react to the tile world, so they're Sprites
+Cloud.prototype.redraw = function (c) {
+  c.save();
+  c.translate(this.position.x, this.position.y);
+  c.fillStyle = 'rgba(255,255,255,0.75)';
+  for(var i in this.circles) {
+    c.beginPath();
+    c.arc(this.circles[i].x, this.circles[i].y, this.circles[i].r, 0, 2 * Math.PI, false);
+    c.closePath();
+    c.fill();
+  }
+  c.restore();
+};

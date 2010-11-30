@@ -18,12 +18,13 @@ $(function () {
   
   // Initialize level here
   var clear_level = function () {
-    for(var x = 0; x < 8; ++x) { 
-      level[x] = [];
-      for(var y = 0; y < 15; ++y) {
-        level[x][y] = 0;
-      }
-    }
+    // for(var x = 0; x < 8; ++x) { 
+    //   level[x] = [];
+    //   for(var y = 0; y < 15; ++y) {
+    //     level[x][y] = 0;
+    //   }
+    // }
+    level = [];
   };
   
   // Method for redrawing the screen
@@ -61,12 +62,15 @@ $(function () {
     // into the tiles[] array.
     var x = Math.floor((e.pageX - e.target.offsetLeft) / 100) + scroll,
         y = Math.floor((e.pageY - e.target.offsetTop) / 40);
-    log(x, y);
     // Handle the possible nonexistence of this tile spot
     if(typeof(level[x]) === 'undefined') {
-      level[x] = [];
-      for(var i = 0; i < level[0].length; ++i) {
-        level[x].push(0);
+      for(var i = 0; i <= x; ++i) {
+        if(typeof(level[i]) === 'undefined') {
+          level[i] = []
+          for(var j = 0; j < level[0].length; ++j) {
+            level[i].push(0);
+          }
+        }
       }
     }
     
