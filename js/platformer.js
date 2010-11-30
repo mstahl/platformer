@@ -14,6 +14,7 @@ $(function () {
   var context_i = 0;
   var tileset = [];
   var level = [];
+  var level_image = new Image();
   var scroll = 0;
   
   var draw_level = function (l, c) {
@@ -76,6 +77,22 @@ $(function () {
             }
           }
         }
+        
+        // Initialize the level image
+        $(document.body).append(
+          $(document.createElement('canvas'))
+          .attr('width', level.length * defaults.tile_width)
+          .attr('height', level[0].length * defaults.tile_height)
+          .css({
+            'display': 'none',
+            'width'  : level.length * defaults.tile_width,
+            'height' : level[0].length * defaults.tile_height
+          })
+          .attr('id', 'level-canvas')
+        );
+        var c = document.getElementById('level-canvas').getContext('2d');
+        draw_level(level, c);
+        level_image.src = document.getElementById('level-canvas').toDataURL();
       }
       
       $(window).bind('keydown', function (e) {
@@ -144,7 +161,8 @@ $(function () {
       context.translate(-scroll, 0);
       
       // Draw the level's tiles
-      draw_level(level, context);
+      // draw_level(level, context);
+      context.drawImage(level_image, 0, 0);
       
       game.player.move();
       
@@ -163,7 +181,6 @@ $(function () {
   });
   
   // Load tiles
-  // console.log('loading tiles');
   $.getJSON('js/tileset.json', function (data, status, xhr) {
     tileset = $.map(data, function (t, i) {
       t.image_src = t.image;
@@ -172,14 +189,12 @@ $(function () {
       t.image = img;
       return t;
     });
-    // console.log('tiles loaded');
     
     // Load level
-    // console.log('loading level');
     $.getJSON('js/level.json', function (data, status, xhr) {
       level = data;
+      
       game.state('intro').run();
-      // console.log('level loaded');
     });
   });
 });
