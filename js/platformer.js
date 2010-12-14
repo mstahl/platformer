@@ -118,7 +118,6 @@ $(function () {
             break;
           case 65:      // 'a'
           case 37:      // 'left'
-            // game.player.velocity.x = -3;
             game.player.acceleration.left = true;
             game.player.acceleration.right = false;
             return false;
@@ -128,13 +127,12 @@ $(function () {
             break;
           case 68:      // 'd'
           case 39:      // 'right'
-            // game.player.velocity.x = 3;
             game.player.acceleration.left = false;
             game.player.acceleration.right = true;
             return false;
           case 32:      // 'space'
             if(game.player.collision_with.bottom) {
-              game.player.velocity.y = -20;
+              game.player.velocity.y = -25;
               game.player.collision_with.bottom = false;
             }
             return false;

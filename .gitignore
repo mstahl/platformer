@@ -8,9 +8,11 @@
 *.swp
 *.vi
 *~
+._*
 
 # OS or Editor folders
 .DS_Store
+.AppleDouble
 .cache
 .project
 .settings
